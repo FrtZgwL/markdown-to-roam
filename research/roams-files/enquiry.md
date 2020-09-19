@@ -1,25 +1,25 @@
 
 # Let's find the limits of the Roam json import! #
 
-## UIDs ##
+## uid's ##
 
-I tried to export some file and then import it again. Got the error
+I tried to export some file and then import it again. Got the error:
 
-``` 
+```
 Import failed: blocks already exist
 ```
 
 So the blocks are probably unique. I assume that Roam tells them apart with individual uid's.
 
-But I can import files where the blocks don't have UIDs, roam just then adds them then.
+But we can import files where the blocks don't have uid's, roam just then adds them then.
 
 ## Numbered lists ##
 
-Removing the UIDSs from an example file with numbered lists yields a Roam document without numbered lists. This means that Roam somehow remembers which individual blocks are numbered. Since this information is not stored in the json-file itself there is probably no way to keep that part of the structure of the Markdown file when converting it to a Roam document.
+Removing the uid's from an example file with numbered lists yields a Roam document without numbered lists. This means that Roam somehow remembers which individual blocks are numbered. Since this information is not stored in the json-file itself there is probably no way to keep that part of the structure of the Markdown file when converting it to a Roam document.
 
 ## What can we leave out ##
 
-We've already figured out that we can leave out the UIDs. As it turns out we can also drop `create-email`, `create-time`, `edit-email` and `edit-time`. Roam will add them automatically.
+We've already figured out that we can leave out the uid's. As it turns out we can also drop `create-email`, `create-time`, `edit-email` and `edit-time`. Roam will add them automatically.
 
 ## What we need to put in
 
