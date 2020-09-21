@@ -10,17 +10,3 @@ An import of `examples/test_6` shows some flaws of Roams Markdown import:
 
 
 
-
-process line:
-If we get some heading
-    remember heading level
-    remember heading
-    for every subsequent line:
-        if text:
-            nest text under heading
-        if heading:
-            go back depending on level
-            repeat
-
-
-
