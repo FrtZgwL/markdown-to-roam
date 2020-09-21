@@ -1,5 +1,5 @@
 
-# In what ways is roams import lacking? #
+# In what ways is Roam's import lacking? #
 
 An import of `examples/test_6` shows some flaws of Roams Markdown import:
 
