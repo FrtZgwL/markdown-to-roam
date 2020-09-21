@@ -2,14 +2,6 @@
 import re
 import json
 
-# class Node(text):
-#     def __init__(self, text):
-#         self.text = text
-#         self.level = 0
-
-#     def __str__(self):
-#         return self.text
-
 def analyse(line):
     markdown_heading = re.search(r"#+ ", line)
     bold_heading = re.match(r"\*\*.+\*\*", line)
@@ -86,31 +78,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-# current_level = 0
-# parents = {
-#     0 = parent_0
-#     1 = parent_1
-#     2 = parent_2 
-#     3 = parent_3
-# }
-
-# for line in line_gen:
-#     # Process one line
-#     if line is text:
-#         parents[current_level].append(line)
-#     elif line is heading:
-#         if line.level > current_level:
-#             # nest under and switch level
-#             parents[lcurrent_level].append(line)
-#             current_level = line.level
-#             parents[line.level] = line
-#         elif line.level <= current_level:
-#             current_level = line.level - 1
-#             parents[current_level].append(line)
-
-
-
