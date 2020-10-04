@@ -19,9 +19,26 @@ def analyse(line):
         
     return (line, level)
 
+def fix_syntax(line):
+    bullet_1 = re.compile(r" \+ ") #r"\s*+ "
+    bullet_2 = re.compile(r" \* ") # r"\s*\* "
+
+    # fix bullets:
+    line = re.sub(bullet_1, " - ", line)
+    line = re.sub(bullet_2, " - ", line)
+
+    # fix bold and italics:
+    # TODO: This creates a bug that messes up lines wit "*"
+    line = re.sub(re.compile(r"\*"),  "_",  line)
+    line = re.sub(re.compile(r"__"), "**", line)
+    line = re.sub(re.compile(r"_"),  "__", line)
+
+    return line
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("document", help="Convert the document from regular Markdown into Roam-readable Markdown")
+    # parser.add_argument("document", help="Convert the document from regular Markdown into Roam-readable Markdown")
     # parser.add_argument("-o -option", action="store_true", help="Some binary option, forgot what for")
     # TODO: Potential Options: destination file
     
@@ -44,6 +61,9 @@ def main():
 
         while(lines_in_file):
             line, level = analyse(f.readline())
+            print(line)
+            line = fix_syntax(line)
+            print(line)
 
             if line == "":
                 lines_in_file = False
@@ -55,6 +75,7 @@ def main():
                 node = {"text":line}
 
                 if level == 5: # Normal text
+                    # TODO: This could be prettier
                     parent = newest_nodes[current_level]
 
                     if "children" not in parent:
@@ -80,6 +101,8 @@ def main():
 
                     newest_nodes[level] = node
                     current_level = level
+
+
 
     print(json.dumps(document, indent=2))
 
