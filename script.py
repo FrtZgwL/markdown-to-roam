@@ -1,6 +1,7 @@
 
 import re
 import json
+import argparse
 
 def analyse(line):
     markdown_heading = re.search(r"#+ ", line)
@@ -19,6 +20,15 @@ def analyse(line):
     return (line, level)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("document", help="Convert the document from regular Markdown into Roam-readable Markdown")
+    # parser.add_argument("-o -option", action="store_true", help="Some binary option, forgot what for")
+    # TODO: Potential Options: destination file
+    
+    args = parser.parse_args()
+    
+    # if args.option: ...
+
     first_node = {
         "title":"Example title",
         "children": []
@@ -29,7 +39,7 @@ def main():
     newest_nodes = [first_node, None, None, None, None]
     current_level = 0
 
-    with open("examples/simple.md", "r") as f:
+    with open("examples/simple.md", "r") as f: # with open(args.document, "r") as f:
         lines_in_file = True
 
         while(lines_in_file):
