@@ -3,21 +3,31 @@ import re
 import json
 import argparse
 
+# Important assumtion: No Tabs for lists and lists are always indented 4 spaces
+
 def analyse(line):
     markdown_heading = re.search(r"#+ ", line)
     bold_heading = re.match(r"\*\*.+\*\*", line)
+    list_item = re.search(r" *- ", line)
     
     if markdown_heading:
         hashtags = markdown_heading.group()[:-1]
-        level = len(hashtags)
+        heading_level = len(hashtags)
         
     elif(bold_heading):
-        level = 4
+        heading_level = 4
     
     else:
-        level = 5
+        heading_level = 5
+
+    if list_item:
+        white_space = list_item.group()[:-2] # This whitespace counts the list-level
+        # for example: "    - "[:-2] = "    "
+        list_level = len(white_space) / 4
+        if list_level % 1 != 0:
+            raise ValueError("indentations for lists must be 4 spaces")
         
-    return (line, level)
+    return (heading_level, list_level)
 
 def fix_syntax(line):
     bullet_1 = re.compile(r" \+ ") #r"\s*+ "
@@ -54,13 +64,16 @@ def main():
     document = [first_node]
 
     newest_nodes = [first_node, None, None, None, None]
-    current_level = 0
+    current_heading_level = 0
+    current_list_level = 0
 
     with open("examples/simple.md", "r") as f: # with open(args.document, "r") as f:
         lines_in_file = True
 
         while(lines_in_file):
-            line, level = analyse(f.readline())
+            line = f.readline()
+            heading_level, list_level = analyse(line)
+
             print(line)
             line = fix_syntax(line)
             print(line)
@@ -74,33 +87,33 @@ def main():
             else:
                 node = {"text":line}
 
-                if level == 5: # Normal text
+                if heading_level == 5: # Normal text
                     # TODO: This could be prettier
-                    parent = newest_nodes[current_level]
+                    parent = newest_nodes[current_heading_level]
 
                     if "children" not in parent:
                         parent["children"] = []
                     parent["children"].append(node)
 
-                elif level > current_level: # Lower order heading
-                    parent = newest_nodes[current_level]
+                elif heading_level > current_heading_level: # Lower order heading
+                    parent = newest_nodes[current_heading_level]
                     
                     if "children" not in parent:
                         parent["children"] = []
                     parent["children"].append(node)
 
-                    current_level = level
-                    newest_nodes[level] = node
+                    current_heading_level = heading_level
+                    newest_nodes[heading_level] = node
 
-                elif level <= current_level:
-                    parent = newest_nodes[level - 1]
+                elif heading_level <= current_heading_level:
+                    parent = newest_nodes[heading_level - 1]
                     
                     if "children" not in parent:
                         parent["children"] = []
                     parent["children"].append(node)
 
-                    newest_nodes[level] = node
-                    current_level = level
+                    newest_nodes[heading_level] = node
+                    current_heading_level = heading_level
 
 
 
