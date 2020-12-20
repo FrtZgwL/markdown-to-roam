@@ -93,13 +93,17 @@ def main():
 
             else:
                 current_node = Node(line, level)
-
                 ancestry = previous_node.get_ancestry()
 
                 for ancestor in ancestry:
                     if current_node.level > ancestor.level:
                         ancestor.beget(current_node)
                         break
+
+                previous_node = current_node
+
+        pretty_string = json.dumps(title_node.get_tree_below(), indent=2)
+        logging.info(f"Final document structure:\n{pretty_string}")
 
 
 
