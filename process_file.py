@@ -68,15 +68,16 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("document", help="Convert this document from regular Markdown into Roam-readable JSON.")
+    parser.add_argument("-o", "--output", help="Write output to this document.")
     # parser.add_argument("-o -option", action="store_true", help="Some binary option, forgot what for")
     # TODO: Potential Options: destination file
     
     args = parser.parse_args()
 
-    title_node = Node("example title", is_title=True)
+    title_node = Node(args.document, is_title=True)
     previous_node = title_node
 
-    with open("examples/harder.md", "r") as f: # with open(args.document, "r") as f:
+    with open(args.document, "r") as f: # with open(args.document, "r") as f:
         lines_in_file = True
 
         while(lines_in_file):
@@ -105,8 +106,15 @@ def main():
 
                 previous_node = current_node
 
-    pretty_string = json.dumps(title_node.get_tree_below(), indent=2)
-    print(pretty_string)
+
+    final_tree = title_node.get_tree_below()
+    
+    if args.output: # file for output given
+        with open(args.output, "w") as f:
+            json.dump(final_tree, f, indent=2)
+    else: # just output to command line
+        pretty_string = json.dumps(final_tree, indent=2)
+        print(pretty_string)
 
 
 if __name__ == "__main__":
