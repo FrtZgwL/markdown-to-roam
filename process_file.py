@@ -2,8 +2,9 @@
 import re
 import json
 import argparse
-import node
 import logging
+
+from node import Node
 
 # Important assumtion: No Tabs for lists and lists are always indented 4 spaces
 
@@ -14,7 +15,7 @@ def beget(parent, child): # or maybe better implemented as a method of some cust
     parent["children"].add(child)
 
 def analyse(line):
-    logging.info(f"Analysing line: {line}")
+    logging.info(f"Analysing line: {line[:-1]}")
 
     markdown_heading = re.search(r"#+ ", line)
     bold_heading = re.match(r"\*\*.+\*\*", line)
@@ -36,12 +37,12 @@ def analyse(line):
 
         level = 5 + list_level # Lowest tier list items are same as normal text, then they increment on top
         
-        logging.info(f"list_level: {list_level}")
+        logging.debug(f"list_level: {list_level}")
 
     else:
         level = 5
         
-    logging.info(f"level: {level}")
+    logging.debug(f"level: {level}")
     return level
 
 def fix_syntax(line):
@@ -62,7 +63,7 @@ def fix_syntax(line):
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser()
     # parser.add_argument("document", help="Convert the document from regular Markdown into Roam-readable Markdown")
@@ -70,20 +71,9 @@ def main():
     # TODO: Potential Options: destination file
     
     args = parser.parse_args()
-    
-    # if args.option: ...
 
-    first_node = {
-        "title":"Example title",
-        "children": []
-    }
-
-    document = [first_node]
-
-    newest_nodes = [first_node, None, None, None, None]
-    list_nodes = [first_node, None, None, None, None, None, None, None]
-    current_heading_level = 0
-    current_list_level = 0
+    title_node = Node("example title", is_title=True)
+    previous_node = title_node
 
     with open("examples/simple.md", "r") as f: # with open(args.document, "r") as f:
         lines_in_file = True
@@ -91,82 +81,25 @@ def main():
         while(lines_in_file):
             line = f.readline()
 
-            logging.info(f"line before syntax-fix: {line}")
+            # Fixing and analysing line for level
             line = fix_syntax(line)
-            logging.info(f"line after syntax-fix: {line}")
-
             level = analyse(line)
 
             if line == "":
                 lines_in_file = False
 
-            # elif line == "\n":
-            #     pass
+            elif line == "\n":
+                pass
 
-            # else:
-            #     node = {"text":line}
+            else:
+                current_node = Node(line, level)
 
-                # if heading_level == 5: # lists & normal text
-                #     # TODO: This could be prettier
+                ancestry = previous_node.get_ancestry()
 
-                #     # HIER WEITER!! Listen einordnen
-
-                #     if list_level == 0: # normal text
-                #         parent = newest_nodes[current_heading_level]
-
-                #         if "children" not in parent:
-                #             parent["children"] = []
-                #         parent["children"].append(node) # TODO: Simplify and generalize this child-adding in a function
-
-                #         list_nodes[list_level] = node
-                #         current_list_level = list_level
-
-                #     elif list_level > current_list_level:
-                #         parent = list_nodes[current_list_level]
-
-                #         if "children" not in parent:
-                #             parent["children"] = []
-                #         parent["children"].append(node)
-
-                #         current_list_level = list_level
-                #         list_nodes[list_level] = node
-
-
-                #     elif list_level < current_list_level:
-                #         parent_level = current_list_level-1
-                #         if parent_level == 0:
-                #             parent = newest_nodes[current_heading_level]
-                #         else:
-                #             parent = list_nodes[parent_level] # TODO: Wenn ich auf 0 zurückgehe, parent außerhalb der Liste
-
-                #         if "children" not in parent:
-                #             parent["children"] = []
-                #         parent["children"].append(node)
-
-                #         list_nodes[current_list_level] = node
-                        
-
-                # elif heading_level > current_heading_level: # Lower order heading
-                #     parent = newest_nodes[current_heading_level]
-                    
-                #     if "children" not in parent:
-                #         parent["children"] = []
-                #     parent["children"].append(node)
-
-                #     current_heading_level = heading_level
-                #     newest_nodes[heading_level] = node
-
-                #     list_nodes[current_list_level] = node
-
-                # elif heading_level <= current_heading_level:
-                #     parent = newest_nodes[heading_level - 1]
-                    
-                #     if "children" not in parent:
-                #         parent["children"] = []
-                #     parent["children"].append(node)
-
-                #     newest_nodes[heading_level] = node
-                #     current_heading_level = heading_level
+                for ancestor in ancestry:
+                    if current_node.level > ancestor.level:
+                        ancestor.beget(current_node)
+                        break
 
 
 
