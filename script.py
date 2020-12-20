@@ -29,7 +29,7 @@ def analyse(line):
     if list_item:
         white_space = list_item.group()[:-2] # This whitespace counts the list-level
         # for example: "    - "[:-2] = "    "
-        list_level = 1 + len(white_space) / 4
+        list_level = int(len(white_space) / 4)
         if list_level % 1 != 0:
             raise ValueError("indentations for lists must be 4 spaces")
 
@@ -113,6 +113,7 @@ def main():
                         parent["children"].append(node) # TODO: Simplify and generalize this child-adding in a function
 
                         list_nodes[list_level] = node
+                        current_list_level = list_level
 
                     elif list_level > current_list_level:
                         parent = list_nodes[current_list_level]
@@ -126,9 +127,11 @@ def main():
 
 
                     elif list_level < current_list_level:
-                        parent = list_nodes[current_list_level-1] # TODO: Wenn ich auf 0 zurückgehe, parent außerhalb der Liste
-                        
-                        # TODO: Hier weiter
+                        parent_level = current_list_level-1
+                        if parent_level == 0:
+                            parent = newest_nodes[current_heading_level]
+                        else:
+                            parent = list_nodes[parent_level] # TODO: Wenn ich auf 0 zurückgehe, parent außerhalb der Liste
 
                         if "children" not in parent:
                             parent["children"] = []
