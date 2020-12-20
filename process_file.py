@@ -6,13 +6,6 @@ import logging
 
 from node import Node
 
-# Important assumtion: No Tabs for lists and lists are always indented 4 spaces
-
-def beget(parent, child): # or maybe better implemented as a method of some custom object? Would have to implement custom to-json function... 
-    if "children" not in parent:
-        parent["children"] = []
-
-    parent["children"].add(child)
 
 def analyse(line):
     logging.info(f"Analysing line: {line[:-1]}")
@@ -20,6 +13,8 @@ def analyse(line):
     markdown_heading = re.search(r"#+ ", line)
     bold_heading = re.match(r"\*\*.+\*\*", line)
     list_item = re.search(r" *- ", line)
+
+    is_list_item = False
     
     if markdown_heading:
         hashtags = markdown_heading.group()[:-1]
@@ -36,6 +31,8 @@ def analyse(line):
         list_level = int(len(white_space) / 4)
 
         level = 5 + list_level # Lowest tier list items are same as normal text, then they increment on top
+
+        is_list_item = True
         
         logging.debug(f"list_level: {list_level}")
 
@@ -43,7 +40,8 @@ def analyse(line):
         level = 5
         
     logging.debug(f"level: {level}")
-    return level
+    return level, is_list_item
+
 
 def fix_syntax(line):
     bullet_1 = re.compile(r" \+ ") #r"\s*+ "
@@ -61,12 +59,15 @@ def fix_syntax(line):
 
     return line
 
+def remove_bullet(line, level):
+    return line[4*(level - 5) + 2:]
+
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.WARNING)
 
     parser = argparse.ArgumentParser()
-    # parser.add_argument("document", help="Convert the document from regular Markdown into Roam-readable Markdown")
+    parser.add_argument("document", help="Convert this document from regular Markdown into Roam-readable JSON.")
     # parser.add_argument("-o -option", action="store_true", help="Some binary option, forgot what for")
     # TODO: Potential Options: destination file
     
@@ -75,7 +76,7 @@ def main():
     title_node = Node("example title", is_title=True)
     previous_node = title_node
 
-    with open("examples/simple.md", "r") as f: # with open(args.document, "r") as f:
+    with open("examples/harder.md", "r") as f: # with open(args.document, "r") as f:
         lines_in_file = True
 
         while(lines_in_file):
@@ -83,7 +84,9 @@ def main():
 
             # Fixing and analysing line for level
             line = fix_syntax(line)
-            level = analyse(line)
+            level, is_list_item = analyse(line)
+            if is_list_item:
+                line = remove_bullet(line, level)
 
             if line == "":
                 lines_in_file = False
@@ -102,14 +105,8 @@ def main():
 
                 previous_node = current_node
 
-        pretty_string = json.dumps(title_node.get_tree_below(), indent=2)
-        logging.info(f"Final document structure:\n{pretty_string}")
-
-
-
-    # logging.info(json.dumps(document, indent=2))
-
-
+    pretty_string = json.dumps(title_node.get_tree_below(), indent=2)
+    print(pretty_string)
 
 
 if __name__ == "__main__":
