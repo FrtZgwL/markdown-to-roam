@@ -32,7 +32,7 @@ class Node:
 
         return ancestry
 
-    """Returns a dictionary with the tree of everyone this node is in any way related to."""
+    """Returns a dictionary with the tree of all children, children of children and so on."""
     def get_tree_below(self):
         if self.is_title:
             tree = {
